@@ -47,10 +47,45 @@ CourseSchema.pre("save", async function (next) {
   const bootcamp = await Bootcamp.findById(this.bootcamp);
 
   if (!bootcamp) {
-    return next(new ErrorResponse(`Bootcamp not found with id = ${this.bootcamp}`, 404));
+    return next(new ErrorResponse(`Bootcamp not found with id = ${this.bootcamp}`, 400));
   }
 
   next();
+});
+
+// Static method to get average of course tuition fees
+CourseSchema.statics.getAverageCost = async function (bootcampId) {
+  const obj = await this.aggregate([
+    {
+      $match: { bootcamp: bootcampId }
+    },
+    {
+      $group: {
+        _id: "$bootcamp",
+        averageCost: { $avg: "$tuitionFee" }
+      }
+    }
+  ]);
+
+  const averageCost = obj.length ? obj[0].averageCost : 0;
+
+  try {
+    await Bootcamp.findByIdAndUpdate(bootcampId, {
+      averageCost: Math.ceil(averageCost / 10) * 10
+    });
+  } catch (error) {
+    console.error(error);
+  }
+};
+
+// Call getAverageCost after save
+CourseSchema.post("save", function () {
+  this.constructor.getAverageCost(this.bootcamp);
+});
+
+// Call getAverageCost before remove
+CourseSchema.pre("remove", function () {
+  this.constructor.getAverageCost(this.bootcamp);
 });
 
 module.exports = mongoose.model("Course", CourseSchema);
