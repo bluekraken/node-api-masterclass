@@ -7,7 +7,7 @@ const geocoder = require("../utils/geocoder");
 // @desc      Get all bootcamps
 // @route     GET /api/v1/bootcamps
 // @access    Public
-exports.getBootcamps = asyncHandler(async (req, res, next) => {
+exports.getBootcamps = asyncHandler((req, res, next) => {
   res.status(200).json(res.advancedResults);
 });
 

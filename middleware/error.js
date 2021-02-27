@@ -15,7 +15,8 @@ const errorHandler = (err, req, res, next) => {
 
   // Mongoose value is not unique
   if (err.code === 11000) {
-    const message = `The value '${err.keyValue.name}' is not unique`;
+    const keys = Object.keys(err.keyValue);
+    const message = `The ${keys[0]} '${err.keyValue[keys[0]]}' is not unique`;
     error = new ErrorResponse(message, 400);
   }
 
