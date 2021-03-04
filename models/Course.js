@@ -1,6 +1,5 @@
 const mongoose = require("mongoose");
 const Bootcamp = require("./Bootcamp");
-const ErrorResponse = require("../utils/ErrorResponse");
 
 const CourseSchema = new mongoose.Schema(
   {
@@ -37,21 +36,15 @@ const CourseSchema = new mongoose.Schema(
       type: mongoose.Schema.ObjectId,
       ref: "Bootcamp",
       required: [true, "Please supply a bootcamp"]
+    },
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: [true, "Please supply a user"]
     }
   },
   { timestamps: true }
 );
-
-// Validate that the bootcamp exists
-CourseSchema.pre("save", async function (next) {
-  const bootcamp = await Bootcamp.findById(this.bootcamp);
-
-  if (!bootcamp) {
-    return next(new ErrorResponse(`Bootcamp not found with id = ${this.bootcamp}`, 400));
-  }
-
-  next();
-});
 
 // Static method to get average of course tuition fees
 CourseSchema.statics.getAverageCost = async function (bootcampId) {
@@ -88,4 +81,6 @@ CourseSchema.pre("remove", function () {
   this.constructor.getAverageCost(this.bootcamp);
 });
 
-module.exports = mongoose.model("Course", CourseSchema);
+const Course = mongoose.model("Course", CourseSchema);
+
+module.exports = Course;

@@ -1,3 +1,4 @@
+const crypto = require("crypto");
 const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
@@ -39,14 +40,6 @@ const UserSchema = new mongoose.Schema(
   }
 );
 
-// Return the user's public profile
-UserSchema.methods.toJSON = function () {
-  const user = this.toObject();
-  delete user.password;
-
-  return user;
-};
-
 // Hash the plain text password before saving
 UserSchema.pre("save", async function (next) {
   if (this.isModified("password")) {
@@ -56,6 +49,16 @@ UserSchema.pre("save", async function (next) {
   next();
 });
 
+// Return the user's public profile
+UserSchema.methods.toJSON = function () {
+  const user = this.toObject();
+  delete user.password;
+  delete user.resetPasswordToken;
+  delete user.resetPasswordExpire;
+
+  return user;
+};
+
 // Sign JWT and return
 UserSchema.methods.getSignedJwt = function () {
   return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
@@ -63,7 +66,21 @@ UserSchema.methods.getSignedJwt = function () {
   });
 };
 
-// Find the user via their email and verify password
+// Generate and hash a reset password token
+UserSchema.methods.getResetPasswordToken = function () {
+  // Generate the token
+  const token = crypto.randomBytes(20).toString("hex");
+
+  // Hash the token and update the resetPasswordToken field
+  this.resetPasswordToken = crypto.createHash("sha256").update(token).digest("hex");
+
+  // Set the token to expire in 10 minutes (600,000 milliseconds)
+  this.resetPasswordExpire = Date.now() + 600_000;
+
+  return token;
+};
+
+// Find the user via their login credentials
 UserSchema.statics.findUserByCredentials = async function (email, password) {
   const user = await User.findOne({ email });
 

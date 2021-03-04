@@ -1,4 +1,4 @@
-const advancedResults = (model, populate) => async (req, res, next) => {
+const advancedResults = (model, ...populate) => async (req, res, next) => {
   // Copy request query
   const reqQuery = { ...req.query };
 
@@ -49,8 +49,10 @@ const advancedResults = (model, populate) => async (req, res, next) => {
   query = query.skip(startIndex).limit(limit);
 
   // Populate virtuals
-  if (populate) {
-    query = query.populate(populate);
+  if (populate.length > 0) {
+    populate.forEach((populate) => {
+      query = query.populate(populate);
+    });
   }
 
   // Execute query

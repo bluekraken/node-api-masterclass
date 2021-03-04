@@ -70,7 +70,7 @@ const BootcampSchema = new mongoose.Schema(
     },
     averageRating: {
       type: Number,
-      min: [1, "Rating must be at least 1"],
+      min: [0, "Rating must be at least 0"],
       max: [10, "Rating can not be more than 10"]
     },
     averageCost: Number,
@@ -94,9 +94,10 @@ const BootcampSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
-    createdAt: {
-      type: Date,
-      default: Date.now
+    user: {
+      type: mongoose.Schema.ObjectId,
+      ref: "User",
+      required: [true, "Please supply a user"]
     }
   },
   {
@@ -146,4 +147,6 @@ BootcampSchema.virtual("courses", {
   justOne: false
 });
 
-module.exports = mongoose.model("Bootcamp", BootcampSchema);
+const Bootcamp = mongoose.model("Bootcamp", BootcampSchema);
+
+module.exports = Bootcamp;
