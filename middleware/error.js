@@ -9,8 +9,8 @@ const errorHandler = (err, req, res, next) => {
 
   // Mongoose invalid ObjectId
   if (err.name === "CastError") {
-    const message = `Oops, ${err.value} is not a valid id`;
-    error = new ErrorResponse(message, 400);
+    const message = "Resource not found";
+    error = new ErrorResponse(message, 404);
   }
 
   // Mongoose value is not unique
